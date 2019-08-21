@@ -1,0 +1,134 @@
+/**
+ * generate a binaryTree
+ * 构建一个二叉树
+ *二叉树的前序、中序与后序遍历递归和非递归实现
+ */
+public class TreeNode {
+    TreeNode left;
+    TreeNode right;
+    int val;
+    TreeNode(int val){
+        this.val = val;
+    }
+
+    public TreeNode(int val, TreeNode left, TreeNode right){
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+
+import java.util.Stack;
+
+public class ThroughTree {
+    public void preOrder(TreeNode root){
+        if(root != null){
+            System.out.print(root.val + "\t");
+            preOrder(root.left);
+            preOrder(root.right);
+        }
+    }
+
+    public void preOrderNoRecursion(TreeNode root){
+        Stack<TreeNode> stack = new Stack<>();
+        while (true){
+            while (root != null){
+                stack.push(root);
+                System.out.print(root.val + "\t");
+                root = root.left;
+            }
+            if(stack.isEmpty()) return;
+            root = stack.pop();
+            root = root.right;
+        }
+    }
+
+    public void inOrder(TreeNode root){
+        if(root != null){
+            inOrder(root.left);
+            System.out.print(root.val + "\t");
+            inOrder(root.right);
+        }
+    }
+
+    public void inOrderNoRecursion(TreeNode root){
+        Stack<TreeNode> stack = new Stack<>();
+        while (true){
+            while (root != null){
+                stack.push(root);
+                root = root.left;
+            }
+            if(stack.isEmpty()) return;
+            root = stack.pop();
+            System.out.print(root.val + "\t");
+            root = root.right;
+        }
+    }
+
+    public void postOrder(TreeNode root){
+        if(root != null){
+            postOrder(root.left);
+            postOrder(root.right);
+            System.out.print(root.val + "\t");
+        }
+    }
+
+    public void postOrderNoRecursion(TreeNode root){
+        Stack<TreeNode> stack1 = new Stack<>();
+        Stack<Integer> stack2 = new Stack<>();
+        while (root != null || !stack1.isEmpty()){
+            while (root != null) {
+                stack1.push(root);
+                stack2.push(root.val);
+                root = root.right;
+            }
+            if(!stack1.isEmpty()){
+                root = stack1.pop();
+                root = root.left;
+            }
+        }
+        while (!stack2.isEmpty()){
+            System.out.print(stack2.pop() + "\t");
+        }
+    }
+}
+
+
+
+/**
+ * 测试函数
+ */
+public class Main {
+    public static void main(String[] args) {
+        TreeNode node7 = new TreeNode(7, null, null);
+        TreeNode node10 = new TreeNode(10, null, null);
+        TreeNode node9 = new TreeNode(9, null, node10);
+        TreeNode node6 = new TreeNode(6, null, node7);
+        TreeNode node8 = new TreeNode(8, node6, node9);
+        TreeNode node1 = new TreeNode(1, null, null);
+        TreeNode node2 = new TreeNode(2, node1, null);
+        TreeNode node4 = new TreeNode(4, null, null);
+        TreeNode node3 = new TreeNode(3, node2, node4);
+        TreeNode node5 = new TreeNode(5, node3, node8);
+        ThroughTree throughTree = new ThroughTree();
+        System.out.println("前序遍历");
+        throughTree.preOrder(node5);
+        System.out.println();
+        throughTree.preOrderNoRecursion(node5);
+        System.out.println();
+
+        System.out.println("中序遍历");
+        throughTree.inOrder(node5);
+        System.out.println();
+        throughTree.inOrderNoRecursion(node5);
+
+
+        System.out.println();
+        System.out.println("后序遍历");
+        throughTree.postOrder(node5);
+        System.out.println();
+        throughTree.postOrderNoRecursion(node5);
+    }
+
+}

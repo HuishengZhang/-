@@ -1,0 +1,46 @@
+
+/**
+ * 快速排序及其实现
+ *https://blog.csdn.net/shujuelin/article/details/82423852
+ */
+public class Main {
+
+    /**
+     * i am a boy=>boy a am i
+     *
+     * @author Administrator
+     */
+    public static void main(String[] args) {
+        int[] array = {1, 4, 7, 2, 5, 8, 3, 6,3,4,5,6,7,8};
+        quikSort(array, 0, array.length - 1);
+        for (int i = 0; i < array.length; i++) {
+            System.out.print(array[i] + "\t");
+        }
+    }
+        public static void quikSort(int[] array, int i, int j){
+        if(i > j){
+            return;
+        }
+        int left = i;
+        int right = j;
+        int temp = array[i];
+        while (left < right){
+            while (temp <= array[right] && left < right){
+                right--;
+            }
+            while (temp >= array[left] && left < right){
+                left++;
+            }
+            if(left < right){
+                int a = array[left];
+                array[left] = array[right];
+                array[right] = a;
+            }
+        }
+        array[i] = array[left];
+        array[left] = temp;
+
+        quikSort(array, i, right - 1);
+        quikSort(array, right + 1, j);
+        }
+}

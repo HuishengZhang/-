@@ -1,6 +1,9 @@
 
 /**
  * 快速排序及其实现
+ *最好情况下是每次选出的值为中间值，这样根节点两边元素数量相同，时间复杂度o(nlog(n))
+ *最坏情况下是数组是一个递增或者递减的数组，树退化成链表，时间复杂度为o(n^2)，此时快排编程冒泡排序
+ *空间复杂度o(log(n))
  *https://blog.csdn.net/shujuelin/article/details/82423852
  */
 public class Main {

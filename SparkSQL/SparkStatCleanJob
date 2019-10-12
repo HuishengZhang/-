@@ -1,0 +1,48 @@
+package com.imooc
+
+import org.apache.spark.sql.{SaveMode, SparkSession}
+
+object SparkStatCleanJob {
+  def main(args: Array[String]): Unit = {
+    val spark = SparkSession.builder().appName("SparkStatCleanJob")
+      .config("spark.sql.sources.partitionColumnTypeInference.enabled","false")
+      .master("local[4]").getOrCreate()
+    val accessRDD = spark.sparkContext.textFile("/media/hadoop/本地磁盘/linuxWorkspace/sparksql/output1")
+    //accessRDD.take(20).foreach(println)
+    val NewAccessRDD = accessRDD.filter(x => x.contains("http://www.imooc.com/video"))
+
+
+    NewAccessRDD.take(10).foreach(println)
+
+    val newRDDS = NewAccessRDD.map( x => {
+      val splits = x.split("\t")
+      val url = splits(1)
+      val traffic = splits(2)
+      val ip = splits(3)
+      val domain = "http://www.imooc.com/"
+      val cms = url.substring(url.indexOf(domain) + domain.length)
+      val cmsTyped = cms.split("/").filter(x => x.length > 6)
+      var cmsType = ""
+      var cmsId = " "
+      if(cmsTyped.length > 1){
+         cmsType = cmsTyped(0)
+        if(cmsTyped(1).length < 6) {
+          cmsId = cmsTyped(1)
+        }
+      }
+
+
+      CleanedLog(url,traffic,ip,cmsType,cmsId)
+    }).filter(CleanedLog => CleanedLog.cmsId != " ")
+    /**
+      * RDD => DataFrame
+      */
+    val accessDF = spark.createDataFrame(NewAccessRDD.map( x => AccessConvertUtil.parseLog(x)), AccessConvertUtil.struct)
+    //val accessDF = spark.createDataFrame(newRDDS)
+    accessDF.printSchema()
+    accessDF.show(100,false)
+    accessDF.coalesce(1).write.format("parquet")//coalesce控制分区数量
+      .partitionBy("day").mode(SaveMode.Overwrite).save("/media/hadoop/本地磁盘/linuxWorkspace/sparksql/output12")
+    spark.stop()
+  }
+}

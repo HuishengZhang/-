@@ -1,0 +1,3 @@
+package com.imooc
+
+case class CleanedLog(url: String, traffic: String, ip: String, cmsType:String, cmsId:String)

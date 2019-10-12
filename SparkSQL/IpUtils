@@ -1,0 +1,13 @@
+package com.imooc
+
+import com.ggstar.util.ip.IpHelper
+
+object IpUtils {
+  def getCity(ip: String) ={
+    IpHelper.findRegionByIp(ip)
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(getCity("39.181.43.78"))
+  }
+}

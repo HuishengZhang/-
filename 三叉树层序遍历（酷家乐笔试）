@@ -1,0 +1,50 @@
+
+import java.util.LinkedList;
+public class Main {
+    public static void main(String[] args) {
+        Node nodeD = new Node("D");
+        Node nodeB = new Node("B", null, null, nodeD);
+        Node nodeG = new Node("G");
+        Node nodeK = new Node("K");
+        Node nodeC = new Node("C", nodeG, null, nodeK);
+        Node nodeA = new Node("A", nodeB,null, nodeC);
+        printTreeInLine(nodeA);
+    }
+    public static void printTreeInLine(Node root){
+        if(root==null)
+            return;
+        LinkedList<Node> queue = new LinkedList<>();
+        queue.add(root);
+        Node temp;
+        while (!queue.isEmpty()){
+            for(int size=queue.size();size>0;size--){
+                temp = queue.remove();
+                System.out.print(temp.value);
+                System.out.print(",");
+                if(temp.left!=null)
+                    queue.offer(temp.left);
+                if(temp.middle!=null)
+                    queue.add(temp.middle);
+                if(temp.right!=null)
+                    queue.add(temp.right);
+            }
+            System.out.println();
+        }
+    }
+}
+
+class Node {
+    public String value;
+    public Node left;
+    public Node middle;
+    public Node right;
+    public Node(String value){
+        this.value = value;
+    }
+    public Node(String value, Node left, Node middle, Node right){
+        this.value = value;
+        this.left = left;
+        this.middle = middle;
+        this.right = right;
+    }
+}

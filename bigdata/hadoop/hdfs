@@ -70,3 +70,85 @@ public class HDFSWCApp01 {
         System.out.println("大老虎的HDFS API统计词频运行成功....");
     }
 }
+
+
+
+
+package com.njupt.bigdata.hadoop.hdfs;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 自定义上下文,实质上就是缓存
+ */
+public class NjuptContext {
+
+    private Map<Object, Object> cacheMap = new HashMap<Object, Object>();
+
+    public Map<Object, Object> getCacheMap(){
+        return cacheMap;
+    }
+
+    /**
+     * 写数据到缓存中去
+     * @param key 单词
+     * @param value 次数
+     */
+    public void write(Object key, Object value){
+        cacheMap.put(key,value);
+    }
+
+    /**
+     * 从缓存中获取值
+     * @param key 单词
+     * @return  单词对应的词频
+     */
+    public Object get(Object key){
+        return cacheMap.get(key);
+    }
+
+}
+
+
+
+
+package com.njupt.bigdata.hadoop.hdfs;
+
+/**
+ * 自定义Mapper
+ */
+public interface NjuptMapper {
+    /**
+     * @param line 读取到的每一行数据
+     * @param context 上下文/缓存
+     */
+    public void map(String line, NjuptContext context);
+
+
+}
+
+
+
+
+package com.njupt.bigdata.hadoop.hdfs;
+
+/**
+ * 自定义wc实现类
+ */
+public class WordCountMapper implements NjuptMapper{
+
+    public void map(String line, NjuptContext context) {
+        String[] words = line.split(" ");
+
+        for(String word: words){
+            Object value = context.get(word);
+            if(value == null){//没有出现过该单词
+                context.write(word, 1);
+            }else {//取出单词对应的次数+1
+                int v = Integer.parseInt(value.toString());
+                context.write(word, v + 1);
+            }
+        }
+    }
+}

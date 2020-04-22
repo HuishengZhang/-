@@ -1,0 +1,177 @@
+
+import org.apache.flink.api.common.operators.Order
+import org.apache.flink.api.scala.ExecutionEnvironment
+
+import scala.collection.mutable.ListBuffer
+
+object DataSetTransformationApp {
+
+  def main(args: Array[String]): Unit = {
+
+    val env = ExecutionEnvironment.getExecutionEnvironment
+
+//    mapFunction(env)
+//    filterFunction(env)
+//    mapPartitionFunction(env)
+//    firstFunction(env)
+//    distinctFunction(env)
+//    joinFunction(env)
+//      outJoinFunction(env)
+      crossFunction(env)
+  }
+
+  def crossFunction(env: ExecutionEnvironment) ={
+    import org.apache.flink.api.scala._
+    val info1 = List("曼联","曼城")
+    val info2 = List(3,1,0)
+    val data1 = env.fromCollection(info1)
+    val data2 = env.fromCollection(info2)
+
+    data1.cross(data2).print()
+
+  }
+
+  def mapFunction(env: ExecutionEnvironment): Unit ={
+    import org.apache.flink.api.scala._
+    val data = env.fromCollection(List(1,2,3,4,5,6,7,8,10))
+//    data.map((x:Int) => x + 1).print()
+    data.map(_ + 1).print()//rem
+
+  }
+
+  def filterFunction(env: ExecutionEnvironment) ={
+    import org.apache.flink.api.scala._
+    val data = env.fromCollection(List(1,2,3,4,5,6,7))
+      .map(_ + 1).filter(_ > 5).print()
+  }
+
+  //DataSource 100个元素，把结果存储到数据库中
+  def mapPartitionFunction(env: ExecutionEnvironment) ={
+    import org.apache.flink.api.scala._
+    val studuents = new ListBuffer[String]
+    for(i <- 1 to 100){
+      studuents.append("student: " + i)
+    }
+
+    val data = env.fromCollection(studuents).setParallelism(5)
+
+//    data.map(x => {
+//      //每一个元素要存储到数据库中去，肯定需要先获取到一个connection
+//      val connection = DBUtils.getConnection()
+//      println(connection + "....")
+//
+//      //TODO..保存数据到DB
+//      DBUtils.returnConnection(connection)
+//    }).print()
+
+    //减少写入数据时数据库的访问次数，一个分区访问一次
+    data.mapPartition(x => {
+      val connection = DBUtils.getConnection()
+      println(connection)
+
+      x
+    }).print()
+
+  }
+
+  def firstFunction(env: ExecutionEnvironment) = {
+    import org.apache.flink.api.scala._
+    val info = ListBuffer[(Int, String)]()
+    info.append((1, "Hadoop"))
+    info.append((1, "Spark"))
+    info.append((1, "Flink"))
+    info.append((2, "Java"))
+    info.append((2, "Spring boot"))
+    info.append((3, "linux"))
+    info.append((4, "vue"))
+
+    val data = env.fromCollection(info)
+
+//    data.first(3).print()
+//      data.groupBy(0).first(2).print()
+    data.groupBy(0).sortGroup(1, Order.DESCENDING).first(2).print()
+  }
+
+  def flatMapFunction(env: ExecutionEnvironment) = {
+    val info = ListBuffer[(String)]()
+    info.append("hadoop,spark")
+    info.append("hadoop,flink")
+    info.append("flink,flink")
+    import org.apache.flink.api.scala._
+    val data = env.fromCollection(info)
+//    data.map(_.split(",")).print()
+//    data.flatMap(_.split(",")).print()
+    data.flatMap(_.split(","))
+      .map((_,1))
+      .groupBy(0)
+      .sum(1)
+      .print()
+
+  }
+
+  def distinctFunction(env: ExecutionEnvironment) = {
+    val info = ListBuffer[(String)]()
+    info.append("hadoop,spark")
+    info.append("hadoop,flink")
+    info.append("flink,flink")
+    import org.apache.flink.api.scala._
+    val data = env.fromCollection(info)
+
+    data.flatMap(_.split(",")).distinct().print()
+
+  }
+
+  def joinFunction(env: ExecutionEnvironment) = {
+    import org.apache.flink.api.scala._
+    val info1 = ListBuffer[(Int, String)]()
+    info1.append((1, "PK哥"))
+    info1.append((2, "J哥"))
+    info1.append((3, "小队长"))
+    info1.append((4, "大老虎"))
+
+    val info2 = ListBuffer[(Int, String)]()
+    info2.append((1, "北京"))
+    info2.append((2, "上海"))
+    info2.append((3, "广州"))
+    info2.append((5, "哈尔滨"))
+
+    val data1 = env.fromCollection(info1)
+    val data2 = env.fromCollection(info2)
+
+    data1.join(data2).where(0)  //0表示第0个字段为key
+      .equalTo(0)
+      .apply((left, right) => {
+        (left._1, left._2, right._2)
+      }).print()
+  }
+
+  def outJoinFunction(env: ExecutionEnvironment) = {
+    import org.apache.flink.api.scala._
+    val info1 = ListBuffer[(Int, String)]()
+    info1.append((1, "PK哥"))
+    info1.append((2, "J哥"))
+    info1.append((3, "小队长"))
+    info1.append((4, "大老虎"))
+
+    val info2 = ListBuffer[(Int, String)]()
+    info2.append((1, "北京"))
+    info2.append((2, "上海"))
+    info2.append((3, "广州"))
+    info2.append((5, "哈尔滨"))
+0
+    val data1 = env.fromCollection(info1)
+    val data2 = env.fromCollection(info2)
+
+    data1.leftOuterJoin(data2).where(0)  //0表示第0个字段为key
+      .equalTo(0)
+      .apply((left, right) => {
+        if(right == null){
+          (left._1, left._2, "-")
+        }else{
+          (left._1, left._2, right._2)
+        }
+
+      }).print()
+  }
+
+}

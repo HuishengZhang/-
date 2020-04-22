@@ -1,0 +1,70 @@
+package cn.zhanghuisheng.course04
+
+import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.flink.configuration.Configuration
+
+object DataSetDataSourceApp {
+
+  def main(args: Array[String]): Unit = {
+
+    val env = ExecutionEnvironment.getExecutionEnvironment
+
+//    1、从集合的方式
+//    fromCollection(env)
+//     textFile(env)
+//      csvFile(env)
+//      readRecursiveFile(env)
+    readCompressionFile(env)
+
+  }
+
+  def fromCollection(env: ExecutionEnvironment) = {
+
+    import org.apache.flink.api.scala._
+    val data = 1 to 10
+    env.fromCollection(data).print()
+  }
+
+  def textFile(env: ExecutionEnvironment) = {
+    val dir = "file:///D:/Youku Files/testDir"
+
+    val path = "file:///D:/Youku Files/hello.txt"
+    env.readTextFile(dir).print()
+
+
+  }
+
+  def csvFile(env: ExecutionEnvironment) = {
+    val file = "file:///D:/Youku Files/testDir/people.csv"
+    import org.apache.flink.api.scala._
+//    env.readCsvFile[(String, Int, String)](file, ignoreFirstLine = true).print()
+
+//    env.readCsvFile[(String, Int)](file, ignoreFirstLine = true, includedFields = Array(2,1)).print()
+
+//    env.readCsvFile[MyCaseClass](file, ignoreFirstLine = true, includedFields = Array(0,1)).print()
+
+    env.readCsvFile[Person](file, ignoreFirstLine = true, pojoFields = Array("name", "age", "work")).print()
+
+  }
+
+//  读取递归文件夹下的文件
+  def readRecursiveFile(env: ExecutionEnvironment) = {
+    val path = "file:///D:/Youku Files/testDir/"
+
+    val parameters =new Configuration
+    parameters.setBoolean("recursive.file.enumeration", true)
+    env.readTextFile(path).withParameters(parameters).print()
+    println("分割线")
+    env.readTextFile(path)
+  }
+
+  def readCompressionFile(env: ExecutionEnvironment) = {
+    val file = "file:///D:/Youku Files/testDir/hello1.txt.gz"
+    env.readTextFile(file).print()
+  }
+
+  case class MyCaseClass(name: String, age: Int)
+
+
+
+}

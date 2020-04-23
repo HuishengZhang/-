@@ -1,0 +1,47 @@
+package cn.zhanghuisheng.course04.Distribute;
+
+import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.java.operators.DataSource;
+import org.apache.flink.configuration.Configuration;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class JavaDistributedCacheApp {
+
+    public static void main(String[] args) throws Exception {
+
+        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+
+        String filePath = "file:///D://BaiduNetdiskDownload/flink-train-java/sinkout/hello.txt";
+
+        env.registerCachedFile(filePath, "localFile");
+
+        DataSource<String> data = env.fromElements("hadoop", "spark", "flink", "pyspark", "storm");
+
+        data.map(new RichMapFunction<String, String>() {
+
+            List<String> list1 = new ArrayList<String>();
+
+            @Override
+            public void open(Configuration parameters) throws Exception {
+                File file = getRuntimeContext().getDistributedCache().getFile("localFile");
+                List<String> lists =  FileUtils.readLines(file);
+                for (String list : lists) {
+                    list1.add(list);
+                    System.out.println("line = [" + list + "]");
+                }
+            }
+
+            public String map(String value) throws Exception {
+                return value;
+            }
+        }).print();
+
+
+    }
+
+}
